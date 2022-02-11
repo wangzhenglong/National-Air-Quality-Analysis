@@ -1,0 +1,35 @@
+
+
+java:S1319x"tThe type of the "arrayList" object should be an interface such as "List" rather than the implementation "ArrayList".(•Å­8¶ï€•î/
+Š
+java:S1319‡"mThe return type of this method should be an interface such as "Map" rather than the implementation "HashMap".(»Ãà8¶ï€•î/
+Q
+java:S3740b"/Provide the parametrized type for this generic.(ŒÌ·şÿÿÿÿ8¶ï€•î/
+R
+java:S3740"/Provide the parametrized type for this generic.(×Ö•—ıÿÿÿÿ8¶ï€•î/
+r	java:S117"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÜåøÌüÿÿÿÿ8Àï€•î/
+n	java:S117Œ"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(á‹É³8Àï€•î/
+O
+java:S1135"2Complete the task associated to this TODO comment.(‘Îû­8Æï€•î/
+o
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.(Çµí‘8Èï€•î/
+c
+java:S1075"ARefactor your code to get this URI from a customizable parameter.(ÜåøÌüÿÿÿÿ8Êï€•î/
+Z
+java:S11972"8Move the array designator from the variable to the type.(¦‹ƒ²ùÿÿÿÿ8Êï€•î/
+U
+java:S11979"8Move the array designator from the variable to the type.(ßğî8Êï€•î/
+U	java:S106X"9Replace this use of System.out or System.err by a logger.(ìÍ¦‡8Öï€•î/
+Z	java:S106t"9Replace this use of System.out or System.err by a logger.(º¨Ï§üÿÿÿÿ8Öï€•î/
+I
+java:S1612|",Replace this lambda with a method reference.(İãêà8èï€•î/
+V	java:S106"9Replace this use of System.out or System.err by a logger.(ìÍ¦‡8èï€•î/
+_
+java:S1075Œ"ARefactor your code to get this URI from a customizable parameter.(á‹É³8èï€•î/
+W
+java:S4719›":Replace Charset.forName() call with StandardCharsets.UTF_8(şÄüe8èï€•î/
+V
+java:S1197¦"8Move the array designator from the variable to the type.(ßğî8èï€•î/
+V	java:S106µ"9Replace this use of System.out or System.err by a logger.(ìÍ¦‡8òï€•î/
+H
+java:S1481Š"*Remove this unused "start" local variable.(ƒ¹Õ”8òï€•î/
