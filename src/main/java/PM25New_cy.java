@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,22 +17,21 @@ import java.util.stream.Stream;
  * author dragonKJ
  * createTime 2022/2/10  14:06
  */
-public class PM25 {
+public class PM25New_cy {
 
     public static void main(String[] args) {
         //获取站点集合信息
         HashMap<String,String> siteMap=site();
-        // 设置转换格式
-        DecimalFormat df = new DecimalFormat("0.00%");
+
         Long start= new Date().getTime();
         //年份
-        String year="2015";
+        String year="2014";
         //导出文件名称
-        String fileName="C:\\Users\\admin\\Desktop\\全国空气\\PM2.5-over150\\PM2.5-over150-"+year+"-4.csv";
+        String fileName="C:\\Users\\admin\\Desktop\\全国空气\\PM2.5-cy\\PM2.5-"+year+".csv";
         //csv所在文件夹
-        String BasePath = "C:\\Users\\admin\\Desktop\\全国空气\\全国空气质量数据\\站点_20150101-20151231";
+        String BasePath = "C:\\Users\\admin\\Desktop\\全国空气\\全国空气质量数据\\站点_20140513-20141231";
         Path dir = Paths.get(BasePath);
-        //创建一个set来收集处理的结果
+        //创建一个ArrayList来收集处理的结果-这里使用list总时间比set快一倍
         ArrayList<AirClass> airClassArrayList=new ArrayList<>();
         //获取文件列表
         try (Stream<Path> files1 = Files.list(dir);){
@@ -62,6 +63,10 @@ public class PM25 {
                             AirClass airClass;
                             //循环每一列的数据集，处理每个站点
                             for(int i=3;i<valuesArray.length;i++){
+
+                                if(!siteMap.containsKey(keys[i])){
+                                    continue;
+                                }
                                 airClass=new AirClass();
                                 Double value=0d;
                                 //如果站点该类型数据为空，舍弃该数据
@@ -95,9 +100,9 @@ public class PM25 {
 
 
 
-        ArrayList<String> arrayList=new ArrayList();
+        List<String> arrayList=Collections.synchronizedList(new ArrayList());
 
-        map.entrySet().stream().forEach(entry->{
+        map.entrySet().parallelStream().forEach(entry->{
             //PM2.5总的结果集
             List<AirClass> airClassList=entry.getValue();
             //获取PM2.5大于150的结果集-重度污染
@@ -111,15 +116,31 @@ public class PM25 {
                     airClassList.stream().filter(airClass->airClass.getNum()<=35).collect(Collectors.toList());
 
             //计算PM2.5大于150的比例
-            Double size2=Double.valueOf(airClassList2.size())/Double.valueOf(airClassList.size());
+            Double size2=Double.valueOf(airClassList2.size())==0?0:Double.valueOf(airClassList2.size())/Double.valueOf(airClassList.size());
             //计算PM2.5大于35的比例
-            Double size3=Double.valueOf(airClassList3.size())/Double.valueOf(airClassList.size());
+            Double size3=Double.valueOf(airClassList3.size())==0?0:Double.valueOf(airClassList3.size())/Double.valueOf(airClassList.size());
             //计算PM2.5小于等于35的比例
-            Double size4=Double.valueOf(airClassList4.size())/Double.valueOf(airClassList.size());
+            Double size4=Double.valueOf(airClassList4.size())==0?0:Double.valueOf(airClassList4.size())/Double.valueOf(airClassList.size());
 
+
+            //获取污染平均持续时间
+            AtomicInteger count=new AtomicInteger(0);
+            //是否连续污染
+            AtomicBoolean flag= new AtomicBoolean(false);
+            airClassList.stream().forEach(airClass->{
+                if(airClass.getNum()>35&& !flag.get()){
+                    count.incrementAndGet();
+                    flag.set(true);
+                }else if(airClass.getNum()>35&& flag.get()){
+                    flag.set(true);
+                }else{
+                    flag.set(false);
+                }
+            });
+            //计算污染平均持续时间
+            Double durationAVG=Double.valueOf(airClassList3.size())==0?0:Double.valueOf(airClassList3.size())/count.get();
             //组装站点，比例-返回结果集
-            // +","+airClassList2.size()+","+airClassList.size()
-            arrayList.add(year+","+entry.getKey()+","+siteMap.get(entry.getKey())+","+df.format(size2)+","+df.format(size3)+","+df.format(size4));
+            arrayList.add(year+","+entry.getKey()+","+siteMap.get(entry.getKey())+","+size2+","+size3+","+size4+","+durationAVG);
         });
         Collections.sort(arrayList);
         writeCsv(fileName,arrayList);
@@ -129,12 +150,25 @@ public class PM25 {
 
     }
     //写入csv文件
-    public static void writeCsv(String fileName, ArrayList<String> arrayList){
+    public static void writeCsv(String fileName, List<String> arrayList){
+        // 设置转换格式
+        DecimalFormat df = new DecimalFormat("0.00%");
+        Map<String, List<String[]>> map=arrayList.parallelStream().map(str->str.split(",",-1))
+                .collect(Collectors
+                        .groupingBy(arrys->arrys[3]));
+         List resList=map.entrySet().stream().map(entry->{
+           Double d1= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[4])));
+            Double d2= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[5])));
+            Double d3= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[6])));
+            Double d4= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[7])));
+            return entry.getValue().get(0)[0]+","+entry.getValue().get(0)[2]+","+entry.getValue().get(0)[3]+","+df.format(d1)+","+df.format(d2)+","+df.format(d3)+","+d4;
+        }).collect(Collectors.toList());
+        Collections.sort(resList);
         File csvOutputFile=new File(fileName);
         try(PrintWriter pw = new PrintWriter(csvOutputFile);){
             //,污染平均持续时间(小时),年度检测总时间(小时)
-            pw.println("年度,监测点编码,监测点名称,城市,PM2.5>150的时间占比,PM2.5>35的时间占比,PM2.5<=35的时间占比");
-            arrayList.forEach(str->
+            pw.println("年度,省/市,市/区,PM2.5>150的时间占比,PM2.5>35的时间占比,PM2.5<=35的时间占比,污染平均持续时间(小时)");
+            resList.forEach(str->
                             pw.println(str)
                     );
 
@@ -144,55 +178,28 @@ public class PM25 {
 
     }
 
-    //获取站点集合
+    //获取站点-城市集合
     public  static HashMap<String,String> site(){
         //存储所有站点数据信息
         HashMap<String,String>  keyMap=new HashMap<>();
-        Long start= new Date().getTime();
         //csv所在文件夹
-        String BasePath = "C:\\Users\\admin\\Desktop\\全国空气\\_站点列表";
+        String BasePath = "C:\\Users\\admin\\Desktop\\全国空气\\站点列表-成渝.csv";
         Path dir = Paths.get(BasePath);
-        LinkedHashMap<String,HashSet> hashMap=new LinkedHashMap<>();
-        //获取文件列表
-        try (Stream<Path> files1 = Files.list(dir);){
-            //文件-并行-批量处理
-            files1.forEach(file->{
-                        //判断文件是否csv文件
-                        if(!file.getFileName().toString().endsWith(".csv"))
-                        {return;}
-                        String date=file.getFileName().toString().replace("站点列表-","")
-                                .replace("起.csv","");
-                        List<String> lines = null;
-                        try {
-                            //按行读取
-                            lines = Files.readAllLines(file, Charset.forName("utf8"));
-                        } catch (IOException exception) {
-                            exception.printStackTrace();
-                        }
-                        //处理文件的数据，从第二行开始
-                        List<String> lines2=lines.stream().skip(1).collect(Collectors.toList());
-                        //创建一个set来收集处理的结果
-                        LinkedHashSet<String> set=new LinkedHashSet<>();
-                        //循环处理每一行数据
-                        lines2.stream().forEach(values->{
-                            //将每一行数据分割
-                            String valuesArray[]=values.split(",",-1);
-                            //将第数据加入set（站点信息）
-                            set.add(valuesArray[0]);
-                            keyMap.put(valuesArray[0],valuesArray[1]+","+valuesArray[2]);
-
-                        });
-
-                        hashMap.put(date,set);
-
-                    }
-            );
-
-
-
-        }catch (IOException e){
-            System.out.println(e.toString());
+        List<String> lines = null;
+        try {
+            //按行读取
+            lines = Files.readAllLines(dir, Charset.forName("utf8"));
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
+        //循环处理每一行数据
+        lines.stream().forEach(values->{
+            //将每一行数据分割
+            String valuesArray[]=values.split(",",-1);
+            keyMap.put(valuesArray[0],valuesArray[3]+","+valuesArray[2]);
+
+        });
+
         return keyMap;
     }
 

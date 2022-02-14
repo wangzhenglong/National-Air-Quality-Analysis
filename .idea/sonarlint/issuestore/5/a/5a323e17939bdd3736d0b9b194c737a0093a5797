@@ -1,9 +1,0 @@
-
-j
-java:S2095"HUse try-with-resources or close this "Connection" in a "finally" clause.(ÏÚŸÅþÿÿÿÿ8€ï€•î/
-|
-java:S1149"_Replace the synchronized class "StringBuffer" by an unsynchronized one such as "StringBuilder".(¥º’á8„ï€•î/
-O
-java:S1135"2Complete the task associated to this TODO comment.(‘Îû­8…ï€•î/
-U	java:S106"9Replace this use of System.out or System.err by a logger.(ìÍ¦‡8ˆï€•î/
-U	java:S106#"9Replace this use of System.out or System.err by a logger.(ìÍ¦‡8‰ï€•î/
