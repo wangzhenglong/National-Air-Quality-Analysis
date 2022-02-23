@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Description TODO
+ * Description PM2.5分析-新版-百分比-成渝
  * author dragonKJ
  * createTime 2022/2/10  14:06
  */
@@ -63,7 +63,7 @@ public class PM25New_cy {
                             AirClass airClass;
                             //循环每一列的数据集，处理每个站点
                             for(int i=3;i<valuesArray.length;i++){
-
+                                //过滤不是成渝的站点
                                 if(!siteMap.containsKey(keys[i])){
                                     continue;
                                 }
@@ -76,7 +76,7 @@ public class PM25New_cy {
                                 }else {
                                     continue;
                                 }
-                                //将数据封装成对象装入set
+                                //将数据封装成对象装入list
                                 airClass.setDate(valuesArray[0]);
                                 airClass.setHour(valuesArray[1]);
                                 airClass.setType(valuesArray[2]);
@@ -153,9 +153,11 @@ public class PM25New_cy {
     public static void writeCsv(String fileName, List<String> arrayList){
         // 设置转换格式
         DecimalFormat df = new DecimalFormat("0.00%");
+        //按区域分组
         Map<String, List<String[]>> map=arrayList.parallelStream().map(str->str.split(",",-1))
                 .collect(Collectors
                         .groupingBy(arrys->arrys[3]));
+        //求每个分组的平均值
          List resList=map.entrySet().stream().map(entry->{
            Double d1= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[4])));
             Double d2= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[5])));
@@ -178,7 +180,7 @@ public class PM25New_cy {
 
     }
 
-    //获取站点-城市集合
+    //获取站点-区域集合
     public  static HashMap<String,String> site(){
         //存储所有站点数据信息
         HashMap<String,String>  keyMap=new HashMap<>();

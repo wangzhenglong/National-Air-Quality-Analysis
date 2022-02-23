@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Description TODO
+ * Description PM2.5分析-百分比-新版-全国
  * author dragonKJ
  * createTime 2022/2/10  14:06
  */
@@ -72,7 +72,7 @@ public class PM25New {
                                 }else {
                                     continue;
                                 }
-                                //将数据封装成对象装入set
+                                //将数据封装成对象装入list
                                 airClass.setDate(valuesArray[0]);
                                 airClass.setHour(valuesArray[1]);
                                 airClass.setType(valuesArray[2]);
@@ -150,9 +150,11 @@ public class PM25New {
     public static void writeCsv(String fileName, List<String> arrayList){
         // 设置转换格式
         DecimalFormat df = new DecimalFormat("0.00%");
+        //按区域分组
         Map<String, List<String[]>> map=arrayList.parallelStream().map(str->str.split(",",-1))
                 .collect(Collectors
                         .groupingBy(arrys->arrys[2]));
+         //求每个分组的平均值
          List resList=map.entrySet().stream().map(entry->{
            Double d1= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[3])));
             Double d2= entry.getValue().stream().collect(Collectors.averagingDouble(list->Double.valueOf(list[4])));

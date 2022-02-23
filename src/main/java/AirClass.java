@@ -9,6 +9,8 @@ public class AirClass {
     private String type;
     private String site;
     private Double num;
+    private String season;
+    private String city;
 
     public String getDate() {
         return date;
@@ -49,4 +51,22 @@ public class AirClass {
     public void setNum(Double num) {
         this.num = num;
     }
+
+    public String getSeason() {
+        return season;
+    }
+
+    public void setSeason(String season) {
+        this.season = season;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+
 }
